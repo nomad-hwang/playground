@@ -1,59 +1,41 @@
-<script>
-	import Counter from './Counter.svelte';
-	import welcome from '$lib/images/svelte-welcome.webp';
-	import welcome_fallback from '$lib/images/svelte-welcome.png';
+<script context="module" lang="ts">
+	interface DepthUpdate {
+		e: string;
+		E: number;
+		s: string;
+		U: number;
+		u: number;
+		b: [string, string][];
+		a: [string, string][];
+	}
 </script>
 
-<svelte:head>
-	<title>Home</title>
-	<meta name="description" content="Svelte demo app" />
-</svelte:head>
+<script lang="ts">
+	import Orderbook from './Orderbook.svelte';
+	import { OrderbookData } from './orderbook';
 
-<section>
-	<h1>
-		<span class="welcome">
-			<picture>
-				<source srcset={welcome} type="image/webp" />
-				<img src={welcome_fallback} alt="Welcome" />
-			</picture>
-		</span>
+	import { onMount } from 'svelte';
 
-		to your new<br />SvelteKit app
-	</h1>
+	let orderbook = new OrderbookData('BTC', 'USD');
 
-	<h2>
-		try editing <strong>src/routes/+page.svelte</strong>
-	</h2>
+	onMount(() => {
+		// const ws = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@depth@100ms');
+		const ws = new WebSocket('wss://fstream.binance.com/ws/btcusdt@depth@100ms');
 
-	<Counter />
-</section>
+		ws.addEventListener('open', () => {
+			console.log('connected');
+		});
 
-<style>
-	section {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		flex: 0.6;
-	}
+		ws.addEventListener('message', (event) => {
+			const data: DepthUpdate = JSON.parse(event.data as string);
+			orderbook.bids = data.b.map(([price, size]) => [Number(price), Number(size)]);
+			orderbook.asks = data.a.map(([price, size]) => [Number(price), Number(size)]);
+		});
 
-	h1 {
-		width: 100%;
-	}
+		ws.addEventListener('close', () => {
+			console.log('disconnected');
+		});
+	});
+</script>
 
-	.welcome {
-		display: block;
-		position: relative;
-		width: 100%;
-		height: 0;
-		padding: 0 0 calc(100% * 495 / 2048) 0;
-	}
-
-	.welcome img {
-		position: absolute;
-		width: 100%;
-		height: 100%;
-		top: 0;
-		display: block;
-	}
-</style>
+<Orderbook data={orderbook} />
