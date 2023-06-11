@@ -12,19 +12,21 @@
 </script>
 
 <div class="hys-layout--panel Orderbook_orderbook">
-	<h1>{data.symbol}</h1>
-	<!-- get bids and asks. findout it's max value -->
+	<div class="Orderbook_symbol">
+		<span>{data.symbol}</span>
+		<input type="number" bind:value={aggregate} min="0.01" step="0.01" />
+	</div>
 
-	{#each bidsData.orders as order}
-		<Order {order} {options} sizeSum={bidsData.maxSize} />
+	{#each [...asksData.orders].reverse() as order}
+		<Order {order} {options} sizeSum={asksData.maxSize} />
 	{/each}
 
 	<div class="Orderbook_price">
-		<span>{100.0} {data.quote}</span>
+		<span>Price</span>
 	</div>
 
-	{#each asksData.orders as order}
-		<Order {order} {options} sizeSum={asksData.maxSize} />
+	{#each [...bidsData.orders].reverse() as order}
+		<Order {order} {options} sizeSum={bidsData.maxSize} />
 	{/each}
 </div>
 
@@ -37,14 +39,23 @@
 		z-index: 1;
 	}
 
+	.Orderbook_symbol {
+		text-align: center;
+		font-size: 2rem;
+		margin: 0.5rem 0;
+	}
+
+	.Orderbook_symbol span {
+		width: 90%;
+	}
+	.Orderbook_symbol input {
+		vertical-align: middle;
+		width: 10%;
+	}
+
 	.Orderbook_price {
 		padding: 0.5rem;
 		font-size: 1.5rem;
-		text-align: center;
-	}
-
-	h1 {
-		margin: 0;
 		text-align: center;
 	}
 </style>

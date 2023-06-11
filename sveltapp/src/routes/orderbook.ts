@@ -88,10 +88,10 @@ function aggregate(map: Map<number, number>, side: Side, by: number, rangeCount:
 	});
 
 	// cut to rangeCount
-	if (side === 'bids') {
-		orders.splice(0, orders.length - rangeCount);
-	} else {
+	if (side === 'asks') {
 		orders.splice(rangeCount);
+	} else {
+		orders.splice(0, orders.length - rangeCount);
 	}
 
 	// find max size

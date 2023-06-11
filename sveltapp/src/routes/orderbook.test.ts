@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it } from 'vitest';
 import { OrderbookData } from './orderbook';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 describe('OrderbookData', () => {
 	let orderbook: OrderbookData;
@@ -71,21 +71,50 @@ describe('OrderbookData', () => {
 		});
 
 		it('should aggregate bids by 5', () => {
-			const result = orderbook.get_bids(5);
+			const result = orderbook.get_bids(5, 5);
 
-			expect(result).toEqual([
-				{ side: 'bids', price: 100, size: 10 },
-				{ side: 'bids', price: 95, size: 20 }
-			]);
+			expect(result).toEqual({
+				side: 'bids',
+				maxSize: 20,
+				orders: [
+					{ side: 'bids', price: 95, size: 20 },
+					{ side: 'bids', price: 100, size: 10 }
+				]
+			});
+		});
+
+		it('should aggregate bids by 5 and range by 1', () => {
+			const result = orderbook.get_bids(5, 1);
+
+			// { side: 'bids', price: 100, size: 10 }
+			expect(result).toEqual({
+				side: 'bids',
+				maxSize: 10,
+				orders: [{ side: 'bids', price: 100, size: 10 }]
+			});
 		});
 
 		it('should aggregate asks by 5', () => {
-			const asks = orderbook.get_asks(5);
+			const asks = orderbook.get_asks(5, 5);
 
-			expect(asks).toEqual([
-				{ side: 'asks', price: 100, size: 70 },
-				{ side: 'asks', price: 110, size: 50 }
-			]);
+			expect(asks).toEqual({
+				side: 'asks',
+				maxSize: 70, // 30 + 40: Since it's aggregated, the size is the sum of the sizes of the orders
+				orders: [
+					{ side: 'asks', price: 100, size: 70 },
+					{ side: 'asks', price: 110, size: 50 }
+				]
+			});
+		});
+
+		it('should aggregate asks by 5 and range by 1', () => {
+			const asks = orderbook.get_asks(5, 1);
+
+			expect(asks).toEqual({
+				side: 'asks',
+				maxSize: 70,
+				orders: [{ side: 'asks', price: 100, size: 70 }]
+			});
 		});
 	});
 });
